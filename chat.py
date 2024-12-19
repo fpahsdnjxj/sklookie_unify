@@ -7,6 +7,8 @@ from langchain import hub
 from langchain_openai import ChatOpenAI
 import streamlit as st
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 # 시스템 메시지 템플릿 생성
 system_message_prompt = SystemMessagePromptTemplate.from_template("""
@@ -72,6 +74,7 @@ graph_builder = StateGraph(State).add_sequence([retrieve, generate])
 graph_builder.add_edge(START, "retrieve")
 graph = graph_builder.compile()
 
+"""
 def main():
     st.title("유니피")
     st.write("안녕하세요 저는 유니피에요. 원하는 질문을 입력해주세요.")
@@ -83,4 +86,18 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
+app=FastAPI()
+
+class RequestData(BaseModel):
+    question: str
+
+@app.post("/chat")
+async def answer(data: RequestData):
+    print(data)  # 요청 데이터를 확인
+    user_input = data.question
+    response = graph.invoke({"question": user_input})
+    return {"answer": response["answer"]}
+
+
 
