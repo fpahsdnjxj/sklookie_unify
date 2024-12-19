@@ -13,7 +13,7 @@ class UserSchema(BaseModel):
     user_info: str
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class ListUserResponse(BaseModel):
     users: List[UserSchema]
@@ -23,7 +23,7 @@ class ChatSchema(BaseModel):
     start_date: datetime
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class ListChatResponse(BaseModel):
     chats: List[ChatSchema]
@@ -39,7 +39,8 @@ class MessageSchema(BaseModel):
     message_content:str
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class MessageChatResponse(BaseModel):
     messages: List[MessageSchema]
+    
