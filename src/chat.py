@@ -7,8 +7,13 @@ from langchain import hub
 from langchain_openai import ChatOpenAI
 import streamlit as st
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-from fastapi import FastAPI, HTTPException 
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from db.connection import get_db
+from db.repository import get_message
+from db.orm import Message
 
 # 시스템 메시지 템플릿 생성
 system_message_prompt = SystemMessagePromptTemplate.from_template("""
@@ -95,9 +100,13 @@ class RequestData(BaseModel):
 
 
 @app.post("/chat", status_code=201)
-async def answer(data: RequestData):
+async def answer(
+    data: RequestData,
+    session: Session=Depends(get_db),
+    ):
     user_input = data.question
     if not isinstance(user_input, str) or not user_input.strip():
+        past_messages: List[Message]=get_message(session=session)
         response = graph.invoke({"question": user_input})
         return {"answer": response["answer"]}
     raise HTTPException(status_code=404, detail="question not found")
