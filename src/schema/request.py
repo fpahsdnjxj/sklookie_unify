@@ -14,3 +14,6 @@ class LogInRequest(BaseModel):
 
 class CreateChatRequest(BaseModel):
         chat_name:str
+
+class UpdateChatnameRequest(BaseModel):
+        chat_name:str

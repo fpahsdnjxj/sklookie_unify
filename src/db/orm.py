@@ -47,6 +47,8 @@ class Chat(Base):
             user_id=user_id,
             chat_name=chat_name,
         )
+    
+    
 
 
 class Message(Base):

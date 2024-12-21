@@ -15,6 +15,7 @@ class ListUserResponse(BaseModel):
     users: List[UserSchema]
 
 class ChatSchema(BaseModel):
+    chat_id:str
     chat_name: str
     start_date: datetime
 

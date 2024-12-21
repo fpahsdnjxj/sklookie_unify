@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 from db.connection import get_db
 from db.orm import Users, Chat, Message
@@ -32,6 +32,19 @@ class ChatRepository:
         self.session.commit()
         self.session.refresh(instance=chat)
         return chat
+    
+    def get_chat_by_chat_id(self, chat_id:str)->Chat|None:
+        return self.session.scalar(select(Chat).where(Chat.chat_id==chat_id))
+    
+    def update_chat(self, chat:Chat)->Chat:
+        self.session.add(instance=chat)
+        self.session.commit()
+        self.session.refresh(instance=chat)
+        return chat
+    
+    def delete_chat(self, chat_id:str)->None:
+        self.session.execute(delete(Chat).where(Chat.chat_id==chat_id))
+        self.session.commit()
 
 class MessageRepository:
     def __init__(self, session:Session=Depends(get_db)):

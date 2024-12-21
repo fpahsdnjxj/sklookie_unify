@@ -4,11 +4,10 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
 
 class UserService:
     encoding: str="UTF-8"
-    secret_key:str=os.getenv("SECRETE_KEY")
+    secret_key:str=os.getenv("SECRET_KEY")
     jwt_algorithm: str="HS256"
 
     def hash_password(self, plain_password:str)->str:
