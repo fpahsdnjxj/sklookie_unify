@@ -20,6 +20,19 @@ class UserRepository:
     
     def get_user_by_loginid(self, user_loginid:str)->Users|None:
         return self.session.scalar(select(Users).where(Users.user_loginid==user_loginid))
+    
+    def update_user(self, user:Users)->Users:
+        self.session.add(instance=user)
+        self.session.commit()
+        self.session.refresh(instance=user)
+        return user
+    
+    def delete_user(self, user_loginid:str)->None:
+        self.session.execute(delete(Users).where(Users.user_loginid==user_loginid))
+        self.session.commit()
+
+    
+
 class ChatRepository:
     def __init__(self, session:Session=Depends(get_db)):
         self.session=session

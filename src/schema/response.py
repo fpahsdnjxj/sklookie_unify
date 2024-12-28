@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from enum import Enum
 
@@ -43,4 +43,15 @@ class MessageChatResponse(BaseModel):
 
 class JWTResponse(BaseModel):
     access_token:str
+
+class UserInfoResponse(BaseModel):
+    user_name:Optional[str]=None
+    user_semester:Optional[int]=None
+    user_major:Optional[str]=None
+    user_info:Optional[str]=None
+
+    class Config:
+        from_attributes=True
+
+
 
