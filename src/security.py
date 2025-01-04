@@ -15,13 +15,3 @@ def get_access_token(
         )
     return auth_header.credentials
 
-def user_authorization(
-        access_token=Depends(get_access_token),
-        user_service:UserService=Depends(),
-        user_repo:UserRepository=Depends(),
-    ):
-    user_loginid:str=user_service.decode_jwt(access_token=access_token)
-    user: Users|None=user_repo.get_user_by_loginid(user_loginid=user_loginid)
-    if not user:
-        raise HTTPException(status_code=404, detail="User Not Found")
-    return user

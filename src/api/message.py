@@ -10,21 +10,25 @@ from db.repository import ChatRepository, MessageRepository, UserRepository
 from db.orm import Chat, Message, Users
 from schema.response import MessageChatResponse, UserInfoResponse
 from openai_code.chat_answer import graph
-from security import user_authorization
 from schema.request import TestMessageRequest
+from api.chat import get_chat_service
+from service.users import UserService
+from security import get_access_token
+from service.chat import ChatService
 
 
 router=APIRouter(prefix="/message")
 
-
+## 차후에 도입해볼 websocket
 @router.websocket("/{chat_id}")
 async def chat_wesocket_handler(
     chat_id:str,
     websocket: WebSocket,
-    user:Users=Depends(user_authorization),
-    chat_repo: ChatRepository=Depends(),
+    access_token: str = Depends(get_access_token),
+    chat_service: ChatService = Depends(get_chat_service),
     ):
-    chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
+    chat = chat_service.validate_chat_access(chat_id=chat_id, access_token=access_token)
+    chat:Chat=chat_service.chat_repo.get_chat_by_chat_id(chat_id=chat_id)
     if not chat:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     
@@ -46,15 +50,10 @@ async def chat_wesocket_handler(
 async def look_messages(
     chat_id: str,
     message_repo: MessageRepository=Depends(),
-    user:Users=Depends(user_authorization),
-    chat_repo: ChatRepository=Depends(),
+    access_token: str = Depends(get_access_token),
+    chat_service: ChatService = Depends(get_chat_service),
     ):
-    chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    if chat.user_id!=user.user_id:
-        raise HTTPException(status_code=403, detail="Unauthorized access")
-    
+    chat_service.validate_chat_access(chat_id=chat_id, access_token=access_token)
     message_list: List[Message]=message_repo.get_message_by_chatid(chat_id)
     return message_list or []
 
@@ -63,14 +62,11 @@ async def test_message(
     chat_id:str,
     request:TestMessageRequest,
     message_repo: MessageRepository=Depends(),
-    user:Users=Depends(user_authorization),
-    chat_repo: ChatRepository=Depends(),
+    access_token: str = Depends(get_access_token),
+    chat_service: ChatService = Depends(get_chat_service),
 ):
-    chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    if chat.user_id!=user.user_id:
-        raise HTTPException(status_code=403, detail="Unauthorized access")
+    chat:Chat=chat_service.validate_chat_access(chat_id=chat_id, access_token=access_token)
+    user: Users = chat_service.user_service.authorize_user(access_token=access_token, user_repo=chat_service.user_repo)
     
     #데이터 가져옴
     user_info=UserInfoResponse.model_validate(user)

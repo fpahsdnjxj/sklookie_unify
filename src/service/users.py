@@ -1,8 +1,12 @@
 import bcrypt
+from fastapi import HTTPException
 from jose import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
+
+from db.orm import Users
+from db.repository import UserRepository
 
 
 class UserService:
@@ -32,4 +36,12 @@ class UserService:
             access_token,self.secret_key, algorithms=[self.jwt_algorithm]
         )
         return payload["sub"]
+
+    def authorize_user(self, access_token: str, user_repo: UserRepository) -> Users:
+        user_loginid = self.decode_jwt(access_token=access_token)
+        user = user_repo.get_user_by_loginid(user_loginid=user_loginid)
+        if not user:
+            raise HTTPException(status_code=404, detail="User Not Found")
+        return user
+    
     
