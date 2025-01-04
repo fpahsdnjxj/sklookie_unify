@@ -7,6 +7,8 @@ from langchain_openai import ChatOpenAI
 import os
 
 from openai_code.prompts import prompt
+from schema.response import UserInfoResponse
+from db.orm import Message
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../db/2023_pdf"))
@@ -14,14 +16,22 @@ db_2023 = FAISS.load_local(db_path, embeddings, allow_dangerous_deserialization=
 
 
 llm = ChatOpenAI(
-    model="gpt-4o",
+    model="gpt-4o-mini",
     temperature=0.0
 )
 
 class State(TypedDict):
+    user_info: UserInfoResponse
     question: str
     context: List[Document]
+    previous_message: List[Message]
     answer: str
+
+def stringify_user_info(user: UserInfoResponse) -> str:
+    return ", ".join([f"{key}: {value}" for key, value in user.model_dump().items() if value is not None])
+
+def messages_to_string(messages: List[Message]) -> str:
+    return "\n".join([f"Role: {message.message_role}, Content: {message.message_content}" for message in messages])
 
 def retrieve(state: State):
     if not state["question"] or not isinstance(state["question"], str):
@@ -31,7 +41,10 @@ def retrieve(state: State):
 
 def generate(state: State):
     docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-    messages = prompt.invoke({"question": state["question"], "context": docs_content})
+    user_info_string=stringify_user_info(state["user_info"])
+    messages_list=messages_to_string(state["previous_message"])
+    print(messages_list)
+    messages = prompt.invoke({"user_info":user_info_string, "question": state["question"], "context": docs_content, "previous_message": messages_list})
     response = llm.invoke(messages)
     return {"answer": response.content}
 

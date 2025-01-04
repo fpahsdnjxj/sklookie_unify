@@ -54,7 +54,7 @@ class Chat(Base):
 class Message(Base):
     __tablename__="Message"
 
-    message_id=Column(Integer, primary_key=True, index=True)
+    message_id=Column(Integer, primary_key=True)
     chat_id=Column(CHAR(36), ForeignKey("Chat.chat_id"), primary_key=True)
     message_time=Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     message_content=Column(Text, nullable=False)
@@ -68,4 +68,13 @@ class Message(Base):
             f"message_time={self.message_time}, "
             f"message_content='{self.message_content[:30]}...', "  # 내용이 길 경우 앞 30자만 표시
             f"message_role={self.message_role})"
+        )
+    
+    @classmethod
+    def create(cls, message_id: int, chat_id: str, message_content: str, message_role: str) -> "Message":
+        return cls(
+            message_id=message_id,
+            chat_id=chat_id,
+            message_content=message_content,
+            message_role=message_role,
         )

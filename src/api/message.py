@@ -1,15 +1,18 @@
+import json
 from typing import List
 from fastapi import HTTPException, Depends, APIRouter, WebSocket, WebSocketException, status
+from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from db.connection import get_db
 from db.repository import ChatRepository, MessageRepository, UserRepository
 from db.orm import Chat, Message, Users
-from schema.response import MessageChatResponse
+from schema.response import MessageChatResponse, UserInfoResponse
 from openai_code.chat_answer import graph
-from security import get_access_token
-from service.users import UserService
+from security import user_authorization
+from schema.request import TestMessageRequest
+
 
 router=APIRouter(prefix="/message")
 
@@ -18,18 +21,11 @@ router=APIRouter(prefix="/message")
 async def chat_wesocket_handler(
     chat_id:str,
     websocket: WebSocket,
-    access_token=Depends(get_access_token),
-    user_service: UserService=Depends(),
-    user_repo:UserRepository=Depends(),
+    user:Users=Depends(user_authorization),
     chat_repo: ChatRepository=Depends(),
     ):
     chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
     if not chat:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    
-    user_loginid:str=user_service.decode_jwt(access_token=access_token)
-    user: Users|None=user_repo.get_user_by_loginid(user_loginid=user_loginid)
-    if user.user_id!=chat.user_id:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     
     await websocket.accept()
@@ -46,25 +42,49 @@ async def chat_wesocket_handler(
         await websocket.close(code=1001)
 
 
-
 @router.get("/{chat_id}", status_code=200)
 async def look_messages(
     chat_id: str,
     message_repo: MessageRepository=Depends(),
-    access_token=Depends(get_access_token),
-    user_service: UserService=Depends(),
-    user_repo:UserRepository=Depends(),
+    user:Users=Depends(user_authorization),
     chat_repo: ChatRepository=Depends(),
     ):
     chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
     if not chat:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    
-    user_loginid:str=user_service.decode_jwt(access_token=access_token)
-    user: Users|None=user_repo.get_user_by_loginid(user_loginid=user_loginid)
-    if user.user_id!=chat.user_id:
-        raise HTTPException(status_code=404, detail="User Not Found")
+        raise HTTPException(status_code=404, detail="Chat not found")
+    if chat.user_id!=user.user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized access")
     
     message_list: List[Message]=message_repo.get_message_by_chatid(chat_id)
     return message_list or []
 
+@router.post("/{chat_id}",status_code=201)
+async def test_message(
+    chat_id:str,
+    request:TestMessageRequest,
+    message_repo: MessageRepository=Depends(),
+    user:Users=Depends(user_authorization),
+    chat_repo: ChatRepository=Depends(),
+):
+    chat:Chat=chat_repo.get_chat_by_chat_id(chat_id=chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    if chat.user_id!=user.user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized access")
+    
+    #데이터 가져옴
+    user_info=UserInfoResponse.model_validate(user)
+    message_list: List[Message]=message_repo.get_message_by_chatid(chat_id)
+    next_message_id = len(message_list) + 1
+
+    #질문 저장
+    user_message:Message=Message.create(message_id=next_message_id, chat_id=chat.chat_id, message_content=request.question, message_role="user")
+    message_repo.create_message(message=user_message)
+
+    #답변생성
+    response = graph.invoke({ "user_info": user_info, "question": request.question, "previous_message": message_list})
+    
+    #답변저장
+    ai_message:Message=Message.create(message_id=next_message_id+1, chat_id=chat.chat_id, message_content=response["answer"], message_role="ai")
+    message_repo.create_message(message=ai_message)
+    return JSONResponse(content={"data": ai_message.message_content})

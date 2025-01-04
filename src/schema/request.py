@@ -22,3 +22,6 @@ class UpdateUserinfoRequest(BaseModel):
     user_semester:Optional[int]=None
     user_major:Optional[str]=None
     user_info:Optional[str]=None
+
+class TestMessageRequest(BaseModel):
+       question:str

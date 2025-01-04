@@ -27,8 +27,8 @@ class UserRepository:
         self.session.refresh(instance=user)
         return user
     
-    def delete_user(self, user_loginid:str)->None:
-        self.session.execute(delete(Users).where(Users.user_loginid==user_loginid))
+    def delete_user(self, user_id:str)->None:
+        self.session.execute(delete(Users).where(Users.user_id==user_id))
         self.session.commit()
 
     
@@ -65,3 +65,9 @@ class MessageRepository:
 
     def get_message_by_chatid(self, chat_id: str)->List[Message]|None:
         return list(self.session.scalars(select(Message).where(Message.chat_id==chat_id)))
+    
+    def create_message(self, message: Message)->Message:
+        self.session.add(instance=message)
+        self.session.commit()
+        self.session.refresh(instance=message)
+        return message
