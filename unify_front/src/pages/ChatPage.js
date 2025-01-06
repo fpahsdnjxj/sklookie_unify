@@ -1,14 +1,21 @@
 import {useState} from 'react';
 import axios from 'axios'
+import { useParams } from 'react-router-dom';
+import {useToken} from '../auth/useToken'
 
 const ChatPage=()=>{
+    const {chatId}=useParams();
+    const [token, setToken]=useToken();
+
     const [question, setQuestion]=useState('');
     const [answer, setAnswer]=useState('');
 
     const getAnswer=async()=>{
         setAnswer('답변이 나올 때까지 잠시만 기다려 주세요');
-        const response=await axios.post('/temp/message',{
+        const response=await axios.post(`/message/${chatId}`,{
             question:question
+        }, {
+            headers: {Authorization: `Bearer ${token}`}
         });
         const aiAnswer=response.data;
         setAnswer(aiAnswer.data);

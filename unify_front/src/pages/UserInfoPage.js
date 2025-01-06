@@ -1,5 +1,6 @@
 import {useState, useEffect} from 'react';
 import {useParams, Link} from 'react-router-dom';
+import {useToken} from '../auth/useToken'
 import axios from 'axios'
 
 const UserInfoPage=()=>{
@@ -10,14 +11,19 @@ const UserInfoPage=()=>{
         user_info: '',
     });
     const {userId}=useParams();
+
+    const [token, ]=useToken();
     useEffect(()=>{
         const loadUserInfo=async()=>{
-            const response=await axios.get(`/temp/user/${userId}`);
+            const response=await axios.get(`/user`, 
+                {
+                    headers:{Authorization: `Bearer ${token}`}
+                });
             const newUserInfo=response.data
             setUserInfo(newUserInfo)
         }
         loadUserInfo();
-    }, [userId]);
+    }, [userId, token]);
     return(
         <>
         <h2>My Info</h2>

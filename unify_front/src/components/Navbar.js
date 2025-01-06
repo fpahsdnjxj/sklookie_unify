@@ -4,7 +4,7 @@ const NavBar=()=>{
     return(
         <nav>
             <li>
-                <Link to="/chat">Chat</Link>
+                <Link to="/login">Login</Link>
             </li>
         </nav>
     )

@@ -1,11 +1,13 @@
 import {useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
+import { useToken } from '../auth/useToken';
 import axios from 'axios';
 
 const LoginPage=()=>{
     const [logInID, setLogInId]=useState('');
     const [password, setPassword]=useState('');
     const [error, setError]=useState('');
+    const [,setToken]=useToken();
     const navigate=useNavigate();
     const logIn=async()=>{
         try{
@@ -14,7 +16,8 @@ const LoginPage=()=>{
                 user_password: password,
             }
             const response=await axios.post('auth/login', loginInfo);
-            console.log(response.data)
+            const {access_token}=response.data;
+            setToken(access_token); 
             navigate('/chat');
         }catch(e){
             setError(e.message);

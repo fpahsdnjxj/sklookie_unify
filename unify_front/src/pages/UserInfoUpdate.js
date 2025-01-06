@@ -1,5 +1,6 @@
 import {useState, useEffect} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
+import { useToken } from '../auth/useToken';
 import axios from 'axios'
 
 const UserInfoUpdatePage=()=>{
@@ -11,15 +12,19 @@ const UserInfoUpdatePage=()=>{
     });
     const {userId}=useParams();
     const navigate=useNavigate();
+    const [token, setToken]=useToken();
 
     useEffect(()=>{
         const loadUserInfo=async()=>{
-            const response=await axios.get(`/temp/user/${userId}`);
+            const response=await axios.get(`/user`, 
+                {
+                    headers:{Authorization: `Bearer ${token}`}
+                });
             const newUserInfo=response.data;
             setUserInfo(newUserInfo);
         }
         loadUserInfo();
-    }, [userId]);
+    }, [userId, token]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -31,7 +36,9 @@ const UserInfoUpdatePage=()=>{
 
     const handleSave = async () => {
         try {
-            await axios.patch(`/temp/user/${userId}`, userInfo);
+            await axios.patch(`/user/update`, userInfo, {
+                headers:{Authorization: `Bearer ${token}`}
+            });
             alert('수정 완료되었습니다.');
             navigate(`/user/${userId}`)
         } catch (error) {
