@@ -36,3 +36,7 @@ Thumbs.db
 *.pdf
 *.faiss
 *.pkl
+
+#기타 파일들
+/src/api/temp.py
+/src/openai_code/chat_answer_test.py

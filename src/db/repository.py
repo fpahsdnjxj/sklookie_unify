@@ -58,6 +58,7 @@ class ChatRepository:
     def delete_chat(self, chat_id:str)->None:
         self.session.execute(delete(Chat).where(Chat.chat_id==chat_id))
         self.session.commit()
+    
 
 class MessageRepository:
     def __init__(self, session:Session=Depends(get_db)):

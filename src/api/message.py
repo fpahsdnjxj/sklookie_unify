@@ -1,18 +1,14 @@
-import json
 from typing import List
-from fastapi import HTTPException, Depends, APIRouter, WebSocket, WebSocketException, status
+from fastapi import Depends, APIRouter, WebSocket, WebSocketException, status
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
-from sqlalchemy.orm import Session
 
-from db.connection import get_db
-from db.repository import ChatRepository, MessageRepository, UserRepository
+from db.repository import MessageRepository
 from db.orm import Chat, Message, Users
-from schema.response import MessageChatResponse, UserInfoResponse
+from schema.response import UserInfoResponse
 from openai_code.chat_answer import graph
 from schema.request import TestMessageRequest
 from api.chat import get_chat_service
-from service.users import UserService
 from security import get_access_token
 from service.chat import ChatService
 
@@ -73,12 +69,12 @@ async def test_message(
     message_list: List[Message]=message_repo.get_message_by_chatid(chat_id)
     next_message_id = len(message_list) + 1
 
+    #답변생성
+    response = graph.invoke({ "user_info": user_info, "question": request.question, "previous_message": message_list})
+
     #질문 저장
     user_message:Message=Message.create(message_id=next_message_id, chat_id=chat.chat_id, message_content=request.question, message_role="user")
     message_repo.create_message(message=user_message)
-
-    #답변생성
-    response = graph.invoke({ "user_info": user_info, "question": request.question, "previous_message": message_list})
     
     #답변저장
     ai_message:Message=Message.create(message_id=next_message_id+1, chat_id=chat.chat_id, message_content=response["answer"], message_role="ai")

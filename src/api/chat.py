@@ -6,7 +6,7 @@ from schema.request import CreateChatRequest, UpdateChatnameRequest
 from schema.response import ChatSchema, ListChatResponse
 from security import get_access_token
 from service.users import UserService
-from unify_back.src.service.chat import ChatService
+from service.chat import ChatService
 
 
 
