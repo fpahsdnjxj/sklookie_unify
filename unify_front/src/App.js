@@ -6,7 +6,6 @@ function App() {
   return (
     <BrowserRouter>
     <div className="App">
-      <h1>Unify</h1>
       <Navbar/>
       <div id="page-body">
         <AppRoutes/>

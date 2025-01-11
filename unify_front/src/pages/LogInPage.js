@@ -18,7 +18,7 @@ const LoginPage=()=>{
             const response=await axios.post('auth/login', loginInfo);
             const {access_token}=response.data;
             setToken(access_token); 
-            navigate('/chat');
+            navigate(`/user/${logInID}`);
         }catch(e){
             setError(e.message);
         }

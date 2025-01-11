@@ -16,18 +16,23 @@ const ChatListPage=()=>{
         };
         getChatList();
     }, [token])
+
+    
     return(
-        <div>
-        {chatList.length>0?
-            (chatList.map((chat, i)=>(
-                <Link to={`/chat/${chat.chat_id}`}>
-                <ul key={i}>
-                    <li>{chat.chat_name}</li>
-                    <li>{chat.start_date}</li>
-                </ul>
-                </Link>
-            ))):<div>No Chat Aviable</div>}
-        </div>
+        <>
+        <h1>Chat list</h1>
+            <div>
+            {chatList.length>0?
+                (chatList.map((chat, i)=>(
+                    <Link to={`/chat/${chat.chat_id}`}>
+                    <ul key={i}>
+                        <li>{chat.chat_name}</li>
+                        <li>{chat.start_date}</li>
+                    </ul>
+                    </Link>
+                ))):<div>No Chat Aviable</div>}
+            </div>
+        </>
     );
 }
 

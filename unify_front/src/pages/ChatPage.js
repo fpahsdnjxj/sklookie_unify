@@ -5,7 +5,7 @@ import {useToken} from '../auth/useToken'
 
 const ChatPage=()=>{
     const {chatId}=useParams();
-    const [token, setToken]=useToken();
+    const [token, ]=useToken();
 
     const [question, setQuestion]=useState('');
     const [answer, setAnswer]=useState('');
