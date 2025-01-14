@@ -12,11 +12,11 @@ const UserInfoUpdatePage=()=>{
     });
     const {userId}=useParams();
     const navigate=useNavigate();
-    const [token, setToken]=useToken();
+    const [token, ]=useToken();
 
     useEffect(()=>{
         const loadUserInfo=async()=>{
-            const response=await axios.get(`/user`, 
+            const response=await axios.get(`/api/user`, 
                 {
                     headers:{Authorization: `Bearer ${token}`}
                 });
@@ -36,7 +36,7 @@ const UserInfoUpdatePage=()=>{
 
     const handleSave = async () => {
         try {
-            await axios.patch(`/user/update`, userInfo, {
+            await axios.patch(`/api/user/update`, userInfo, {
                 headers:{Authorization: `Bearer ${token}`}
             });
             alert('수정 완료되었습니다.');

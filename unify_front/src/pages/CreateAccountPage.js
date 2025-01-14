@@ -21,7 +21,7 @@ const CreateAccountPage=()=>{
                 user_password: password,
                 user_name: name
             }
-            await axios.post('/auth/sign-up', userInfo);
+            await axios.post('/api/auth/sign-up', userInfo);
             navigate('/login');
         }catch(e){
             setError(e.message);

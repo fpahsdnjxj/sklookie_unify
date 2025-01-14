@@ -9,7 +9,7 @@ const ChatListPage=()=>{
 
     useEffect(()=>{
         const getChatList=async()=>{
-            const response=await axios.get('/chat', 
+            const response=await axios.get('/api/chat', 
                 {headers:{Authorization:`Bearer ${token}`}});
             const {chats}=response.data;
             setChatList(chats);

@@ -12,7 +12,7 @@ const ChatPage=()=>{
 
     const getAnswer=async()=>{
         setAnswer('답변이 나올 때까지 잠시만 기다려 주세요');
-        const response=await axios.post(`/message/${chatId}`,{
+        const response=await axios.post(`/api/message/${chatId}`,{
             question:question
         }, {
             headers: {Authorization: `Bearer ${token}`}

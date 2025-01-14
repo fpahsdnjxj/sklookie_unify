@@ -15,7 +15,7 @@ const UserInfoPage=()=>{
     const [token, ]=useToken();
     useEffect(()=>{
         const loadUserInfo=async()=>{
-            const response=await axios.get(`/user`, 
+            const response=await axios.get(`/api/user`, 
                 {
                     headers:{Authorization: `Bearer ${token}`}
                 });

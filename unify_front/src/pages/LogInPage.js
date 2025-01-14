@@ -15,7 +15,7 @@ const LoginPage=()=>{
                 user_loginid: logInID,
                 user_password: password,
             }
-            const response=await axios.post('auth/login', loginInfo);
+            const response=await axios.post('/api/auth/login', loginInfo);
             const {access_token}=response.data;
             setToken(access_token); 
             navigate(`/user/${logInID}`);
