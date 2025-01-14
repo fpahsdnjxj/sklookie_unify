@@ -6,7 +6,7 @@ from schema.response import JWTResponse, UserSchema
 from service.users import UserService
 
 
-router=APIRouter(prefix="/auth")
+router=APIRouter(prefix="/api/auth")
 
 @router.post("/sign-up", status_code=201)
 def user_sign_up_handler(

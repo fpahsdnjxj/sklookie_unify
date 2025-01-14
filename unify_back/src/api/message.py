@@ -6,14 +6,14 @@ from fastapi.websockets import WebSocketDisconnect
 from db.repository import MessageRepository
 from db.orm import Chat, Message, Users
 from schema.response import UserInfoResponse
-from openai_code.chat_answer import graph
 from schema.request import TestMessageRequest
 from api.chat import get_chat_service
 from security import get_access_token
 from service.chat import ChatService
+from openai_code.ai_agent_version import get_answer_from_agent
 
 
-router=APIRouter(prefix="/message")
+router=APIRouter(prefix="/api/message")
 
 ## 차후에 도입해볼 websocket
 @router.websocket("/{chat_id}")
@@ -33,7 +33,7 @@ async def chat_wesocket_handler(
         while True:
             user_input=await websocket.receive_text()
             if user_input.strip():
-                response = graph.invoke({"question": user_input})
+                response = get_answer_from_agent(user_input)
             await websocket.send_text(response["answer"])
     except WebSocketDisconnect:
         print(f"WebSocket disconnected for chat_id: {chat_id}")
@@ -69,14 +69,14 @@ async def test_message(
     message_list: List[Message]=message_repo.get_message_by_chatid(chat_id)
     next_message_id = len(message_list) + 1
 
-    #답변생성
-    response = graph.invoke({ "user_info": user_info, "question": request.question, "previous_message": message_list})
-
     #질문 저장
     user_message:Message=Message.create(message_id=next_message_id, chat_id=chat.chat_id, message_content=request.question, message_role="user")
     message_repo.create_message(message=user_message)
+
+    #답변생성
+    response = get_answer_from_agent(request.question, user_info, message_list)
     
     #답변저장
-    ai_message:Message=Message.create(message_id=next_message_id+1, chat_id=chat.chat_id, message_content=response["answer"], message_role="ai")
+    ai_message:Message=Message.create(message_id=next_message_id+1, chat_id=chat.chat_id, message_content=response, message_role="ai")
     message_repo.create_message(message=ai_message)
     return JSONResponse(content={"data": ai_message.message_content})

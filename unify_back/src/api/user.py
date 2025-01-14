@@ -6,7 +6,7 @@ from schema.response import UserInfoResponse
 from security import get_access_token
 from service.users import UserService
 
-router=APIRouter(prefix="/user")
+router=APIRouter(prefix="/api/user")
 
 #유저 정보 수집
 @router.get("", status_code=200)

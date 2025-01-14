@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 from dotenv import load_dotenv
-from prompts import system_message_prompt
+from openai_code.prompts import system_message_prompt
 import os
 
 from schema.response import UserInfoResponse
@@ -39,7 +39,7 @@ def messages_to_string(messages: List[Message]) -> str:
 def get_answer_from_agent(question, userInfo, previousMessage):
     userInfo_string=stringify_user_info(userInfo)
     previousMessage_string=messages_to_string(previousMessage)
-    prompt=system_message_prompt.invoke({"user_info":userInfo_string, "previous_message": previousMessage_string})
+    prompt=system_message_prompt.format(user_info=userInfo_string, previous_message=previousMessage_string)
     tools=[search_yoram_2023]
     llm_with_tools=llm.bind_tools(tools)
     agent_executor=create_react_agent(llm_with_tools, tools, state_modifier=prompt)

@@ -10,7 +10,7 @@ from service.chat import ChatService
 
 
 
-router=APIRouter(prefix="/chat")
+router=APIRouter(prefix="/api/chat")
 
 def get_chat_service(
     user_service: UserService = Depends(),
